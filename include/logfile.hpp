@@ -52,7 +52,7 @@ class Log
             this->file = fopen(FILENAME, "w");
     }
 
-    static constexpr const char* FORMAT  = "%s(%lu:%lu): `%s`:\n%s\n\n";
+    static constexpr const char* FORMAT  = "%s(%u:%u): `%s`:\n%s\n\n";
     static constexpr size_t BUFFER_LIMIT = 0x200;
 
     FILE* file;

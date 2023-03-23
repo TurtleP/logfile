@@ -7,6 +7,7 @@ INCLUDES	:= include
 OUTDIR		:= dist
 DEBUG		:= 0
 DEFINES		:= -D__DEBUG__=$(DEBUG)
+BUILD		:= build
 #---------------------------------------------------------------------------------
 # filetypes
 #---------------------------------------------------------------------------------
@@ -25,11 +26,13 @@ INCLUDE	:= $(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir))
 #---------------------------------------------------------------------------------
 # linker and compiler options
 #---------------------------------------------------------------------------------
-OPTIMIZE 	:= -O2 -flto
-DEBUGGIN	:= -g -Og
+ifeq ($(DEBUG),0)
+RELEASE_FLAGS	:= -O2 -flto
+else
+RELEASE_FLAGS	:= -g -Og
+endif
 CXXSTDLIB	:= c++20
 
-RELEASE_FLAGS	:= $(if $(strip $(DEBUG)),$(DEBUGGIN),$(OPTIMIZE))
 #---------------------------------------------------------------------------------
 CFLAGS		:= -Wall -Wextra $(CFLAGS) $(INCLUDE) $(RELEASE_FLAGS) $(DEFINES)
 CXXFLAGS 	:= $(CFLAGS) $(CXXFLAGS) -std=$(CXXSTDLIB) $(RELEASE_FLAGS)
