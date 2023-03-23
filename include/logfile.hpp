@@ -10,8 +10,6 @@
 class Log
 {
   public:
-    static inline const char* FILENAME = "debug.log";
-
     static Log& Instance()
     {
         static Log instance;
@@ -25,7 +23,8 @@ class Log
 
     void Write(std::source_location location, const char* format, ...)
     {
-        static_assert(m_enabled, "Debugging not enabled. Please remove all LOG calls.");
+        if (!m_enabled)
+            return;
 
         va_list args;
         char buffer[BUFFER_LIMIT] { '\0' };
@@ -41,23 +40,28 @@ class Log
         const auto column   = (uint32_t)location.column();
         const auto funcname = location.function_name();
 
-        fprintf(this->file, Log::FORMAT, filename.c_str(), line, column, funcname, buffer);
+        fprintf(this->file, BUFFER_FORMAT, filename.c_str(), line, column, funcname, buffer);
         fflush(this->file);
     }
 
   private:
+    static inline const char* FILENAME = "debug.log";
+
+    static constexpr const char* BUFFER_FORMAT = "%s(%u:%u): `%s`:\n%s\n\n";
+    static constexpr size_t BUFFER_LIMIT       = 0x200;
+
     Log() : file(nullptr)
     {
         if (m_enabled)
             this->file = fopen(FILENAME, "w");
     }
 
-    static constexpr const char* FORMAT  = "%s(%u:%u): `%s`:\n%s\n\n";
-    static constexpr size_t BUFFER_LIMIT = 0x200;
-
     FILE* file;
     static constexpr bool m_enabled = (__DEBUG__);
 };
 
-#define LOG(format, ...) \
-    Log::Instance().Write(std::source_location::current(), format, ##__VA_ARGS__);
+#define LOG(format, ...)                                                                 \
+    {                                                                                    \
+        static_assert(__DEBUG__, "Debugging not enabled. Please remove all LOG calls."); \
+        Log::Instance().Write(std::source_location::current(), format, ##__VA_ARGS__);   \
+    }
